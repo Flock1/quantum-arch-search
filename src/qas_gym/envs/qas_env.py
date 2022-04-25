@@ -88,12 +88,20 @@ class QuantumArchSearchEnv(gym.Env):
             circuit, observables=self.state_observables)
         return np.array(obs).real
 
+    # def _get_fidelity(self):
+    #     circuit = self._get_cirq(maybe_add_noise=True)
+    #     pred = self.simulator.simulate(circuit).final_state_vector
+    #     inner = np.inner(np.conj(pred), self.target)
+    #     fidelity = np.conj(inner) * inner
+    #     return fidelity.real
     def _get_fidelity(self):
+        fidelity = []
         circuit = self._get_cirq(maybe_add_noise=True)
         pred = self.simulator.simulate(circuit).final_state_vector
-        inner = np.inner(np.conj(pred), self.target)
-        fidelity = np.conj(inner) * inner
-        return fidelity.real
+        for i in range(len(self.target)):
+            inner = np.inner(np.conj(pred), self.target[i])
+            fidelity.append((np.conj(inner) * inner).real)
+        return np.max(fidelity)
 
     def step(self, action):
 
